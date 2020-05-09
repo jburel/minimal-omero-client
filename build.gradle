@@ -3,7 +3,7 @@ plugins {
     id "java"
 }
 
-mainClassName = "com.example.SimpleConnection"
+mainClassName = "com.example.ZarrDownload"
 
 def javaOpts = [
     '-Dlog4j.configuration=log4j-cli.properties',
@@ -13,18 +13,25 @@ def javaOpts = [
 version = '5.5.4'
 
 repositories {
+    maven {
+        name 'Brockmann-Consult Public Maven Repository'
+        url 'http://nexus.senbox.net/nexus/content/groups/public/'
+    }
     mavenLocal()
     mavenCentral()
     maven {
-        name 'Unidata'
-        url 'https://artifacts.unidata.ucar.edu/content/repositories/unidata-releases'}
-    maven {
         url 'https://artifacts.openmicroscopy.org/artifactory/maven/'
     }
+    
 }
 
 dependencies {
     implementation("org.openmicroscopy:omero-gateway:5.6.3")
+    //implementation("com.bc.zarr:jzarr:0.3-SNAPSHOT")
+    //implementation("org.nd4j:nd4j-native-platform:1.0.0-alpha")
+    implementation platform("software.amazon.awssdk:bom:2.11.10")
+    implementation("software.amazon.awssdk:sts:2.13.8")
+    implementation("software.amazon.awssdk:s3")
 }
 
 startScripts {
