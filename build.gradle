@@ -3,7 +3,7 @@ plugins {
     id "java"
 }
 
-mainClassName = "com.example.ZarrDownload"
+mainClassName = "com.example.Zarr"
 
 def javaOpts = [
     '-Dlog4j.configuration=log4j-cli.properties',
@@ -23,6 +23,11 @@ repositories {
         url 'https://artifacts.openmicroscopy.org/artifactory/maven/'
     }
     
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
 }
 
 dependencies {
