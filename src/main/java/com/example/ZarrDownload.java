@@ -12,7 +12,6 @@ import software.amazon.awssdk.auth.credentials.AnonymousCredentialsProvider;
 
 
 import java.io.*;
-import java.io.InputStream;
 import java.util.List;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.GetObjectResponse;
@@ -32,7 +31,7 @@ public class ZarrDownload {
         //endpoint = "https://s3.embassy.ebi.ac.uk/";
         URI endpoint_uri = new URI(endpoint);
         String bucketName = "idr";
-        String name = "4007801.zarr";
+        String name = "6001240.zarr";
         String key = "zarr/v0.1/" + name + "/";
         File f = new File(name);
         f.mkdir();
@@ -65,33 +64,16 @@ public class ZarrDownload {
             
             GetObjectRequest getRequest = GetObjectRequest.builder().bucket(bucketName).key(k).build();
             ResponseInputStream<GetObjectResponse> responseStream = client.getObject(getRequest, ResponseTransformer.toInputStream());
-            BufferedReader reader = new BufferedReader(new InputStreamReader(responseStream));
-            String line;
             File new_file = new File(parent, new_name);
-            try (FileWriter writer = new FileWriter(new_file);
-                 BufferedWriter bw = new BufferedWriter(writer)) {
-
-                while ((line = reader.readLine()) != null) {            
-                    bw.write(line);
-                    bw.write("\n");
-                }
+            OutputStream outStream = new FileOutputStream(new_file);
+            byte[] buffer = new byte[8 * 1024];
+            int bytesRead;
+            while ((bytesRead = responseStream.read(buffer)) != -1) {
+                outStream.write(buffer, 0, bytesRead);
             }
-        }
-        /*
-        GetObjectRequest getRequest = GetObjectRequest.builder().bucket(bucketName).key(key).build();
-        ResponseInputStream<GetObjectResponse> responseStream = client.getObject(getRequest, ResponseTransformer.toInputStream());
-        BufferedReader reader = new BufferedReader(new InputStreamReader(responseStream));
-        String line;
-        try (FileWriter writer = new FileWriter("merge.py");
-             BufferedWriter bw = new BufferedWriter(writer)) {
-
-            while ((line = reader.readLine()) != null) {            
-                bw.write(line);
-                bw.write("\n");
-            }
-        }*/
-        
-        
+            responseStream.close();
+            outStream.close();
+        } 
     }
 
     private File createDir(File parent, String[] values)
