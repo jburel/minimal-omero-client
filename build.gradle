@@ -3,7 +3,7 @@ plugins {
     id "java"
 }
 
-mainClassName = "com.example.ZarrDownload"
+mainClassName = "com.example.Zarr"
 
 def javaOpts = [
     '-Dlog4j.configuration=log4j-cli.properties',
@@ -32,11 +32,12 @@ java {
 
 dependencies {
     implementation("org.openmicroscopy:omero-gateway:5.6.3")
-    //implementation("com.bc.zarr:jzarr:0.3-SNAPSHOT")
-    //implementation("org.nd4j:nd4j-native-platform:1.0.0-alpha")
+    implementation("com.bc.zarr:jzarr:0.3-SNAPSHOT")
+    implementation("org.nd4j:nd4j-native-platform:1.0.0-alpha")
     implementation platform("software.amazon.awssdk:bom:2.11.10")
     implementation("software.amazon.awssdk:sts:2.13.8")
     implementation("software.amazon.awssdk:s3")
+    implementation("software.amazon.awssdk:netty-nio-client")
 }
 
 startScripts {

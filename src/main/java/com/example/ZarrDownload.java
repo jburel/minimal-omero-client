@@ -5,6 +5,7 @@ import java.io.IOException;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import software.amazon.awssdk.core.client.config.*;
 import software.amazon.awssdk.auth.credentials.AwsCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
@@ -23,32 +24,38 @@ import software.amazon.awssdk.services.s3.model.S3Object;
 import software.amazon.awssdk.core.sync.ResponseTransformer;
 import software.amazon.awssdk.core.ResponseInputStream;
 
+
 public class ZarrDownload {
 
     void loadFromS3() throws Exception
     {
         String endpoint = "https://minio-dev.openmicroscopy.org/";
-        //endpoint = "https://s3.embassy.ebi.ac.uk/";
+        endpoint = "https://s3.embassy.ebi.ac.uk/";
         URI endpoint_uri = new URI(endpoint);
         String bucketName = "idr";
-        String name = "6001240.zarr";
+        String name = "idr/6001240.zarr";
         String key = "zarr/v0.1/" + name + "/";
         File f = new File(name);
         f.mkdir();
+        SdkClientConfiguration clientConfig = SdkClientConfiguration.builder()
+                .option(SdkClientOption.ENDPOINT, endpoint_uri).build();
         AwsCredentials credentials = AnonymousCredentialsProvider.create().resolveCredentials();
- 
         S3Client client = S3Client.builder()
                 .endpointOverride(endpoint_uri)
-                .region(Region.US_EAST_1) // Ignored but required by the client
+                //.overrideConfiguration(clientConfig)
+                .region(Region.EU_WEST_1) // Ignored but required by the client
                 .credentialsProvider(StaticCredentialsProvider.create(credentials)).build();
+        System.err.println(S3Client.builder());
+        System.err.println(client);
 
-
+/*
         List<S3Object> list = client.listObjects(ListObjectsRequest.builder()
                 .bucket(bucketName)
                 .prefix(key)
                 .build()).contents();
         int n = list.size();
         //n = 2;
+        System.err.println(n);
         File parent = f;
         for (int i = 0; i < n; i++) {
             S3Object object = list.get(i);
@@ -73,7 +80,7 @@ public class ZarrDownload {
             }
             responseStream.close();
             outStream.close();
-        } 
+        } */
     }
 
     private File createDir(File parent, String[] values)
