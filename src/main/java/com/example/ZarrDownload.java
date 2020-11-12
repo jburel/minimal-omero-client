@@ -78,10 +78,11 @@ public class ZarrDownload {
             String k = object.key();
             String new_name = k.replace(key, "");
             String[] values = new_name.split("/");
-            int m = values.length;
-            if (m > 1) {
-                parent = createDir(f.toFile(), values);
-                new_name = values[m-1];
+            Path path = Paths.get(new_name);
+            if (path.getNameCount() > 1) {
+                System.err.println(path.getName(path.getNameCount()-1));
+                parent = createDir(f.toFile(), path);
+                new_name = path.getName(path.getNameCount()-1).toFile().getName();
             }
 
             GetObjectRequest getRequest = GetObjectRequest.builder().bucket(bucketName).key(k).build();
@@ -95,11 +96,11 @@ public class ZarrDownload {
         }
     }
 
-    private File createDir(File parent, String[] values)
+    private File createDir(File parent, Path path)
     {
-        int n = values.length - 1;
+        int n = path.getNameCount() - 1;
         for (int i = 0; i < n; i++) {
-            File f = new File(parent, values[i]);
+            File f = new File(parent, path.getName(i).toFile().getName());
             f.mkdir();
             parent = f;
         }
