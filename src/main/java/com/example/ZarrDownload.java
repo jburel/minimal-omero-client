@@ -5,6 +5,8 @@ import java.io.IOException;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.io.InputStreamReader;
+import java.io.BufferedReader;
 import software.amazon.awssdk.core.client.config.*;
 import software.amazon.awssdk.auth.credentials.AwsCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
@@ -20,10 +22,18 @@ import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.ListObjectsRequest;
 import software.amazon.awssdk.services.s3.model.ListObjectsResponse;
 import software.amazon.awssdk.services.s3.model.S3Object;
+import software.amazon.awssdk.services.s3.S3Configuration;
 
 import software.amazon.awssdk.core.sync.ResponseTransformer;
 import software.amazon.awssdk.core.ResponseInputStream;
 
+import org.apache.commons.io.IOUtils;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.Path;
+import javax.swing.*;
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
 
 public class ZarrDownload {
 
@@ -33,22 +43,28 @@ public class ZarrDownload {
         endpoint = "https://s3.embassy.ebi.ac.uk/";
         URI endpoint_uri = new URI(endpoint);
         String bucketName = "idr";
-        String name = "idr/6001240.zarr";
-        String key = "zarr/v0.1/" + name + "/";
-        File f = new File(name);
-        f.mkdir();
-        SdkClientConfiguration clientConfig = SdkClientConfiguration.builder()
-                .option(SdkClientOption.ENDPOINT, endpoint_uri).build();
+        String nfile = "6001247.zarr";
+        if (endpoint.contains("minio-dev")) {
+            nfile = "idr/6001240.zarr";
+        }
+        String name = "idr/"+nfile;
+        String key = "zarr/v0.1/" + nfile ;
+        Path f = Files.createDirectories(Paths.get("/tmp/"+name));
+        System.err.println("directory");
+        final S3Configuration config = S3Configuration.builder()
+                .pathStyleAccessEnabled(true)
+                .build();
+        //SdkClientConfiguration clientConfig = SdkClientConfiguration.builder()
+        //        .option(SdkClientOption.ENDPOINT, endpoint_uri).build();
         AwsCredentials credentials = AnonymousCredentialsProvider.create().resolveCredentials();
         S3Client client = S3Client.builder()
                 .endpointOverride(endpoint_uri)
-                //.overrideConfiguration(clientConfig)
+                .serviceConfiguration(config)
                 .region(Region.EU_WEST_1) // Ignored but required by the client
                 .credentialsProvider(StaticCredentialsProvider.create(credentials)).build();
-        System.err.println(S3Client.builder());
-        System.err.println(client);
+        System.err.println(key);
 
-/*
+
         List<S3Object> list = client.listObjects(ListObjectsRequest.builder()
                 .bucket(bucketName)
                 .prefix(key)
@@ -56,7 +72,7 @@ public class ZarrDownload {
         int n = list.size();
         //n = 2;
         System.err.println(n);
-        File parent = f;
+        File parent = f.toFile();
         for (int i = 0; i < n; i++) {
             S3Object object = list.get(i);
             String k = object.key();
@@ -64,23 +80,19 @@ public class ZarrDownload {
             String[] values = new_name.split("/");
             int m = values.length;
             if (m > 1) {
-                parent = createDir(f, values);
+                parent = createDir(f.toFile(), values);
                 new_name = values[m-1];
             }
-            System.out.println(k);
-            
+
             GetObjectRequest getRequest = GetObjectRequest.builder().bucket(bucketName).key(k).build();
             ResponseInputStream<GetObjectResponse> responseStream = client.getObject(getRequest, ResponseTransformer.toInputStream());
+            System.out.println(new_name);
             File new_file = new File(parent, new_name);
-            OutputStream outStream = new FileOutputStream(new_file);
-            byte[] buffer = new byte[8 * 1024];
-            int bytesRead;
-            while ((bytesRead = responseStream.read(buffer)) != -1) {
-                outStream.write(buffer, 0, bytesRead);
-            }
-            responseStream.close();
-            outStream.close();
-        } */
+            new_file.createNewFile();
+
+            OutputStream outputStream = new FileOutputStream(new_file);
+            IOUtils.copy(responseStream, outputStream);
+        }
     }
 
     private File createDir(File parent, String[] values)
