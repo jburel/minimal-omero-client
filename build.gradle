@@ -16,14 +16,16 @@ repositories {
     mavenLocal()
     mavenCentral()
     maven {
-        url 'https://artifacts.openmicroscopy.org/artifactory/maven/'
+        url 'https://artifacts2.openmicroscopy.org/artifactory/maven/'
     }
     maven {
-        url 'https://artifacts.unidata.ucar.edu/content/repositories/unidata-releases'
+        url 'https://artifacts2.unidata.ucar.edu/content/repositories/unidata-releases'
     }
 }
 
 dependencies {
+    implementation("org.openmicroscopy:omero-blitz:5.7.3")
+    implementation("ome:OMEZarrReader:0.5.1")
     implementation("org.openmicroscopy:omero-gateway:5.9.1")
 }
 
